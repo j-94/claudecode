@@ -1,0 +1,38 @@
+{
+  "name": "@anthropic-ai/claude-code",
+  "version": "0.3.0",
+  "description": "Command-line interface for Claude AI assistant",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "claude": "cli.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anthropics/claude-code.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "vitest run",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx .",
+    "typecheck": "tsc --noEmit"
+  },
+  "author": "Anthropic",
+  "license": "MIT",
+  "dependencies": {
+    "ink": "^4.4.1",
+    "react": "^18.2.0",
+    "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.6.0",
+    "@types/react": "^18.2.21",
+    "eslint": "^8.49.0",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.4"
+  }
+}

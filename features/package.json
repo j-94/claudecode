@@ -1,0 +1,9 @@
+{
+  "name": "claude-code-analyzer",
+  "version": "1.0.0",
+  "description": "Analysis tools for Claude Code",
+  "type": "commonjs",
+  "dependencies": {
+    "source-map": "^0.7.4"
+  }
+}

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Claude CLI wrapper script
+# This script runs the Claude CLI with the necessary environment setup
+
+# Get the absolute path to the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Run the CLI through the run-claude.js launcher
+node run-claude.js "$@"

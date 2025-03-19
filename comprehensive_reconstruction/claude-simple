@@ -1,0 +1,151 @@
+#!/usr/bin/env node
+
+/**
+ * Claude Code Simple CLI
+ * 
+ * A simplified version that avoids complex dependencies but still
+ * demonstrates the core functionality.
+ */
+
+import { BatchTool } from './src/tools/BatchTool/BatchTool.tsx';
+import { BashTool } from './src/tools/BashTool/BashTool.tsx';
+import { View } from './src/tools/View/View.tsx';
+import { GlobTool } from './src/tools/GlobTool/GlobTool.tsx';
+import { GrepTool } from './src/tools/GrepTool/GrepTool.tsx';
+import { LSTool } from './src/tools/lsTool/lsTool.tsx';
+import { ThinkTool } from './src/tools/ThinkTool/ThinkTool.tsx';
+import { MACRO } from './src/constants/macro.js';
+
+const tools = {
+  batch: BatchTool,
+  bash: BashTool,
+  view: View,
+  glob: GlobTool,
+  grep: GrepTool,
+  ls: LSTool,
+  think: ThinkTool
+};
+
+const context = {
+  cwd: process.cwd(),
+  tools: Object.values(tools),
+  debug: true,
+  verbose: true
+};
+
+async function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+  
+  if (!command || command === 'help') {
+    showHelp();
+    return;
+  }
+  
+  if (command === 'version' || command === '--version' || command === '-v') {
+    console.log(MACRO.VERSION);
+    return;
+  }
+  
+  if (command === 'list') {
+    listTools();
+    return;
+  }
+  
+  const toolName = command.toLowerCase();
+  const tool = tools[toolName];
+  
+  if (!tool) {
+    console.error(`Unknown tool: ${toolName}`);
+    showHelp();
+    return;
+  }
+  
+  const toolArgs = args.slice(1);
+  
+  try {
+    // Each tool has its own input format
+    const input = parseToolInput(toolName, toolArgs);
+    console.log(`Executing ${toolName} with input:`, input);
+    
+    const result = await tool.call(input, context);
+    console.log(`\nResult from ${toolName}:`);
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error) {
+    console.error(`Error executing ${toolName}:`, error);
+  }
+}
+
+function showHelp() {
+  console.log(`Claude Code Simple CLI v${MACRO.VERSION}
+  
+Available commands:
+  version             Show version
+  list                List available tools
+  bash <command>      Execute a bash command
+  view <file_path>    View contents of a file
+  glob <pattern>      Find files matching pattern
+  grep <pattern>      Search for pattern in files
+  ls [path]           List files in directory
+  batch               Run a batch of commands
+  think <query>       Use Think tool for planning
+  
+Examples:
+  ./claude-simple bash "pwd"
+  ./claude-simple view package.json
+  ./claude-simple glob "*.js"
+  `);
+}
+
+function listTools() {
+  console.log('Available Tools:');
+  for (const [name, tool] of Object.entries(tools)) {
+    console.log(`- ${name}: ${tool.name}`);
+  }
+}
+
+function parseToolInput(toolName, args) {
+  switch (toolName) {
+    case 'bash':
+      return { command: args.join(' ') };
+    
+    case 'view': 
+      return { file_path: args[0] };
+    
+    case 'glob':
+      return { pattern: args[0], path: args[1] || process.cwd() };
+    
+    case 'grep':
+      return { pattern: args[0], path: args[1] || process.cwd(), include: args[2] };
+    
+    case 'ls':
+      return { path: args[0] || process.cwd() };
+    
+    case 'think':
+      return { query: args.join(' ') };
+    
+    case 'batch':
+      // Sample batch operation
+      return {
+        description: "Sample batch operation",
+        invocations: [
+          {
+            tool_name: "Bash", 
+            input: { command: "pwd" }
+          },
+          {
+            tool_name: "LS", 
+            input: { path: process.cwd() }
+          }
+        ]
+      };
+    
+    default:
+      return {};
+  }
+}
+
+main().catch(error => {
+  console.error('Unhandled error:', error);
+  process.exit(1);
+});

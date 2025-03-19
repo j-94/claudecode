@@ -1,0 +1,5 @@
+d{type:"progress",content:E8(`Done (${$.join(" · ")})`),normalizedMessages:z,tools:A}}let S=U.message.content.filter(($)=>$.type==="text");yield{type:"result",data:S,normalizedMessages:z,resultForAssistant:this.renderResultForAssistant(S),tools:A}},isReadOnly(){return!0},async isEnabled(){return!0},userFacingName(){return"Task"},needsPermissions(){return!1},renderResultForAssistant(I){return I},renderToolUseMessage({prompt:I},{verbose:G}){let Z=I.split(KD9);return Of(!G&&Z.length>1?Z[0]+"…":I)},renderToolUseRejectedMessage(){return Lz1.createElement(X3,null)}};var ug=Y1(M1(),1);var if2=`You are an expert software architect. Your role is to analyze technical requirements and produce clear, actionable implementation plans.
+These plans will then be carried out by a junior software engineer so you need to be specific and detailed. However do not actually write the code, just explain the plan.
+
+Follow these steps for each request:
+1. Carefully analyze requirements to identify core functiona

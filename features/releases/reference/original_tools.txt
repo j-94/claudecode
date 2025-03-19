@@ -1,0 +1,19 @@
+total 0
+drwxr-xr-x  18 jobs  staff  576 Mar 19 14:59 .
+drwxr-xr-x  20 jobs  staff  640 Mar 19 14:59 ..
+drwxr-xr-x   5 jobs  staff  160 Mar 19 14:59 AgentTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 ArchitectTool
+drwxr-xr-x   7 jobs  staff  224 Mar 19 14:59 BashTool
+drwxr-xr-x   5 jobs  staff  160 Mar 19 14:59 FileEditTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 FileReadTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 FileWriteTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 GlobTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 GrepTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 MCPTool
+drwxr-xr-x   3 jobs  staff   96 Mar 19 14:59 MemoryReadTool
+drwxr-xr-x   3 jobs  staff   96 Mar 19 14:59 MemoryWriteTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 NotebookEditTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 NotebookReadTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 StickerRequestTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 ThinkTool
+drwxr-xr-x   4 jobs  staff  128 Mar 19 14:59 lsTool

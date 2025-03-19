@@ -1,0 +1,5 @@
+Original codebase statistics:
+Tools:       16
+Commands:       12
+Components:       63
+Utilities:       35
