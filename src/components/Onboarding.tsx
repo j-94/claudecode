@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { PRODUCT_NAME } from '../constants/product.js'
+import { MACRO } from '../constants/macros.js'
 import { Box, Newline, Text, useInput } from 'ink'
 import {
   getGlobalConfig,

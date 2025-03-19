@@ -8,6 +8,10 @@ import { SESSION_ID } from '../utils/log.js'
 import { getIsGit } from '../utils/git.js'
 
 export function initSentry(): void {
+  // Skip Sentry initialization for development
+  console.log('Sentry initialization skipped for development')
+  // Uncomment for production
+  /*
   Sentry.init({
     dsn: SENTRY_DSN,
     release: MACRO.VERSION,
@@ -23,9 +27,14 @@ export function initSentry(): void {
     // Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
     tracePropagationTargets: ['localhost'],
   })
+  */
 }
 
 export async function captureException(error: unknown): Promise<void> {
+  // Log the error locally instead of sending to Sentry
+  console.error('Error captured (not sent to Sentry):', error)
+  
+  /* Skip Sentry operations for development
   try {
     const [isGit, user] = await Promise.all([getIsGit(), getUser()])
     Sentry.setExtras({
@@ -49,4 +58,5 @@ export async function captureException(error: unknown): Promise<void> {
   } catch {
     // ignore errors generated in error capture
   }
+  */
 }

@@ -343,7 +343,7 @@ ${commandList}`,
       'Override verbose mode setting from config',
       () => true,
     )
-    .option('-ea, --enable-architect', 'Enable the Architect tool', () => true)
+    .option('--enable-architect', 'Enable the Architect tool', () => true)
     .option(
       '-p, --print',
       'Print response and exit (useful for pipes)',
@@ -819,7 +819,7 @@ ${commandList}`,
       )
       .option('-c, --cwd <cwd>', 'The current working directory', String, cwd())
       .option(
-        '-ea, --enable-architect',
+        '--enable-architect',
         'Enable the Architect tool',
         () => true,
       )
