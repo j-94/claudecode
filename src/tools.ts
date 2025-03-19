@@ -2,30 +2,35 @@ import { Tool } from './Tool.js'
 import { AgentTool } from './tools/AgentTool/AgentTool.js'
 import { ArchitectTool } from './tools/ArchitectTool/ArchitectTool.js'
 import { BashTool } from './tools/BashTool/BashTool.js'
+import { DocETLTool } from './tools/DocETLTool/DocETLTool.js'
 import { FileEditTool } from './tools/FileEditTool/FileEditTool.js'
 import { FileReadTool } from './tools/FileReadTool/FileReadTool.js'
 import { FileWriteTool } from './tools/FileWriteTool/FileWriteTool.js'
 import { GlobTool } from './tools/GlobTool/GlobTool.js'
 import { GrepTool } from './tools/GrepTool/GrepTool.js'
+import { LotusTool } from './tools/LotusTool/LotusTool.js'
 import { LSTool } from './tools/lsTool/lsTool.js'
 import { MemoryReadTool } from './tools/MemoryReadTool/MemoryReadTool.js'
 import { MemoryWriteTool } from './tools/MemoryWriteTool/MemoryWriteTool.js'
 import { NotebookEditTool } from './tools/NotebookEditTool/NotebookEditTool.js'
 import { NotebookReadTool } from './tools/NotebookReadTool/NotebookReadTool.js'
+import { SelfImproveTool } from './tools/SelfImproveTool/SelfImproveTool.js'
 import { StickerRequestTool } from './tools/StickerRequestTool/StickerRequestTool.js'
 import { ThinkTool } from './tools/ThinkTool/ThinkTool.js'
 import { getMCPTools } from './services/mcpClient.js'
 import { memoize } from 'lodash-es'
 
-const ANT_ONLY_TOOLS = [MemoryReadTool, MemoryWriteTool]
+const ANT_ONLY_TOOLS = [MemoryReadTool, MemoryWriteTool, SelfImproveTool]
 
 // Function to avoid circular dependencies that break bun
 export const getAllTools = (): Tool[] => {
   return [
     AgentTool,
     BashTool,
+    DocETLTool,
     GlobTool,
     GrepTool,
+    LotusTool,
     LSTool,
     FileReadTool,
     FileEditTool,
@@ -34,7 +39,10 @@ export const getAllTools = (): Tool[] => {
     NotebookEditTool,
     StickerRequestTool,
     ThinkTool,
-    ...(process.env.USER_TYPE === 'ant' ? ANT_ONLY_TOOLS : []),
+    // Make all tools available regardless of user type
+    MemoryReadTool,
+    MemoryWriteTool, 
+    SelfImproveTool,
   ]
 }
 
