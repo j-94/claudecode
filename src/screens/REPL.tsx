@@ -16,6 +16,7 @@ import {
   ToolUseConfirm,
 } from '../components/permissions/PermissionRequest.js'
 import PromptInput from '../components/PromptInput.js'
+import { TokenUsageDisplay } from '../components/TokenUsageDisplay.js'
 import { Spinner } from '../components/Spinner.js'
 import { getSystemPrompt } from '../constants/prompts.js'
 import { getContext } from '../context.js'
@@ -638,8 +639,8 @@ export function REPL({
                 setForkConvoWithMessagesOnTheNextRender={
                   setForkConvoWithMessagesOnTheNextRender
                 }
-                readFileTimestamps={readFileTimestamps.current}
               />
+              <TokenUsageDisplay verbose={verbose} messages={messages} />
             </>
           )}
       </Box>

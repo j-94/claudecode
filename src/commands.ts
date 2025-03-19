@@ -5,18 +5,25 @@ import config from './commands/config.js'
 import cost from './commands/cost.js'
 import ctx_viz from './commands/ctx_viz.js'
 import doctor from './commands/doctor.js'
+import experimental_resume from './commands/experimental_resume.js'
 import help from './commands/help.js'
 import init from './commands/init.js'
 import listen from './commands/listen.js'
 import login from './commands/login.js'
 import logout from './commands/logout.js'
+import mcp from './commands/mcp.js'
+import memory_read from './commands/memory_read.js'
+import memory_write from './commands/memory_write.js'
+import model from './commands/model.js'
 import onboarding from './commands/onboarding.js'
 import pr_comments from './commands/pr_comments.js'
 import releaseNotes from './commands/release-notes.js'
+import resume from './commands/resume.js'
 import review from './commands/review.js'
+import self_improve from './commands/self_improve.js'
 import terminalSetup from './commands/terminalSetup.js'
 import { Tool, ToolUseContext } from './Tool.js'
-import resume from './commands/resume.js'
+import { mcpAddCommand } from './commands/mcp_add.js'
 import { getMCPCommands } from './services/mcpClient.js'
 import type { MessageParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import { memoize } from 'lodash-es'
@@ -60,6 +67,12 @@ type LocalJSXCommand = {
   ): Promise<React.ReactNode>
 }
 
+type WizardCommand = {
+  type: 'wizard'
+  progressMessage: string
+  getComponentForCommand(): Promise<React.ReactNode>
+}
+
 export type Command = {
   description: string
   isEnabled: boolean
@@ -67,9 +80,17 @@ export type Command = {
   name: string
   aliases?: string[]
   userFacingName(): string
-} & (PromptCommand | LocalCommand | LocalJSXCommand)
+} & (PromptCommand | LocalCommand | LocalJSXCommand | WizardCommand)
 
-const INTERNAL_ONLY_COMMANDS = [ctx_viz, resume, listen]
+const INTERNAL_ONLY_COMMANDS = [
+  ctx_viz, 
+  resume, 
+  experimental_resume,
+  listen, 
+  memory_read, 
+  memory_write, 
+  self_improve
+]
 
 // Declared as a function so that we don't run this until getCommands is called,
 // since underlying functions read from config, which can't be read at module initialization time
@@ -81,12 +102,15 @@ const COMMANDS = memoize((): Command[] => [
   doctor,
   help,
   init,
+  mcp,
+  model,
   onboarding,
   pr_comments,
   releaseNotes,
   bug,
   review,
   terminalSetup,
+  mcpAddCommand,
   ...(isAnthropicAuthEnabled() ? [logout, login()] : []),
   ...(process.env.USER_TYPE === 'ant' ? INTERNAL_ONLY_COMMANDS : []),
 ])

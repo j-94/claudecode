@@ -1,6 +1,7 @@
 import { memoize } from 'lodash-es'
 import { getDynamicConfig, getExperimentValue } from '../services/statsig.js'
 import { logError } from './log.js'
+import { getGlobalConfig } from './config.js'
 
 export const USE_BEDROCK = !!process.env.CLAUDE_CODE_USE_BEDROCK
 export const USE_VERTEX = !!process.env.CLAUDE_CODE_USE_VERTEX
@@ -39,11 +40,78 @@ async function getModelConfig(): Promise<ModelConfig> {
   }
 }
 
-export const getSlowAndCapableModel = memoize(async (): Promise<string> => {
+// Check if a model is a research model
+export function isResearchModel(modelName: string | undefined): boolean {
+  return Boolean(modelName?.startsWith('research-'))
+}
+
+// Check if research model access is enabled
+export function hasResearchModelAccess(): boolean {
+  // For development environment, don't restrict research model access
+  if (process.env.NODE_ENV === 'development') {
+    return true
+  }
+  
+  // For internal users, always allow research model access
   if (process.env.USER_TYPE === 'ant') {
-    if (process.env.ANTHROPIC_MODEL) {
-      return process.env.ANTHROPIC_MODEL
+    return true
+  }
+  
+  // For others, check configuration
+  const config = getGlobalConfig()
+  return Boolean(config.researchModelAccess)
+}
+
+// Check if a specific model is allowed
+export function isModelAllowed(modelName: string): boolean {
+  if (!isResearchModel(modelName)) {
+    return true // Non-research models are always allowed
+  }
+  
+  const config = getGlobalConfig()
+  if (!config.researchModelAccess) {
+    return false // Research models not enabled
+  }
+  
+  // If allowedModels is not specified, but researchModelAccess is true,
+  // all research models are allowed
+  if (!config.allowedModels || config.allowedModels.length === 0) {
+    return true
+  }
+  
+  // Otherwise, check if the model is in the allowed list
+  return config.allowedModels.includes(modelName)
+}
+
+export const getSlowAndCapableModel = memoize(async (): Promise<string> => {
+  // If ANTHROPIC_MODEL is set in env and it's a valid model, use it
+  if (process.env.ANTHROPIC_MODEL) {
+    const modelName = process.env.ANTHROPIC_MODEL
+    
+    // For research models, verify access is enabled
+    if (isResearchModel(modelName) && !hasResearchModelAccess()) {
+      console.warn(`Research model ${modelName} requested but research model access is not enabled.`)
+      // Fall back to default model
+    } else {
+      return modelName
     }
+  }
+  
+  // Check for user preferred model from config
+  const globalConfig = getGlobalConfig()
+  if (globalConfig.preferredModel) {
+    // Verify research model access if needed
+    if (isResearchModel(globalConfig.preferredModel) && !hasResearchModelAccess()) {
+      console.warn(`Research model ${globalConfig.preferredModel} requested but research model access is not enabled.`)
+      // Fall back to default model
+    } else {
+      return globalConfig.preferredModel
+    }
+  }
+  
+  // Special handling for internal users
+  if (process.env.USER_TYPE === 'ant') {
+    // Use experiment-defined model for internal users
     return (
       await getExperimentValue('chihuahua', {
         color: 'research-claude-denim',
@@ -57,6 +125,7 @@ export const getSlowAndCapableModel = memoize(async (): Promise<string> => {
     }
   }
 
+  // Default model selection
   const config = await getModelConfig()
   if (USE_BEDROCK) {
     return config.bedrock
@@ -68,9 +137,12 @@ export const getSlowAndCapableModel = memoize(async (): Promise<string> => {
 })
 
 export async function isDefaultSlowAndCapableModel(): Promise<boolean> {
+  const config = getGlobalConfig()
+  
   return (
-    !process.env.ANTHROPIC_MODEL ||
-    process.env.ANTHROPIC_MODEL === (await getSlowAndCapableModel())
+    (!process.env.ANTHROPIC_MODEL && !config.preferredModel) ||
+    process.env.ANTHROPIC_MODEL === (await getSlowAndCapableModel()) ||
+    config.preferredModel === (await getSlowAndCapableModel())
   )
 }
 

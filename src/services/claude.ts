@@ -8,7 +8,7 @@ import { createHash, randomUUID } from 'crypto'
 import 'dotenv/config'
 import { getBetas } from '../utils/betas.js'
 
-import { addToTotalCost } from '../cost-tracker.js'
+import { addToTotalCost, addToTotalTokens } from '../cost-tracker.js'
 import type { AssistantMessage, UserMessage } from '../query.js'
 import { Tool } from '../Tool.js'
 import { getAnthropicApiKey, getOrCreateUserID } from '../utils/config.js'
@@ -596,6 +596,10 @@ async function querySonnetWithPromptCaching(
       SONNET_COST_PER_MILLION_PROMPT_CACHE_WRITE_TOKENS
 
   addToTotalCost(costUSD, durationMsIncludingRetries)
+  
+  // Track token usage
+  const cachedTokens = (response.usage.cache_read_input_tokens ?? 0) + (response.usage.cache_creation_input_tokens ?? 0);
+  addToTotalTokens(inputTokens, outputTokens, cachedTokens);
 
   return {
     message: {
@@ -744,6 +748,10 @@ async function queryHaikuWithPromptCaching({
   const durationMs = Date.now() - start
   const durationMsIncludingRetries = Date.now() - startIncludingRetries
   addToTotalCost(costUSD, durationMsIncludingRetries)
+  
+  // Track token usage
+  const cachedTokens = (response.usage.cache_read_input_tokens ?? 0) + (response.usage.cache_creation_input_tokens ?? 0);
+  addToTotalTokens(response.usage.input_tokens, response.usage.output_tokens, cachedTokens);
 
   const assistantMessage: AssistantMessage = {
     durationMs,
@@ -870,6 +878,9 @@ async function queryHaikuWithoutPromptCaching({
     (outputTokens / 1_000_000) * HAIKU_COST_PER_MILLION_OUTPUT_TOKENS
 
   addToTotalCost(costUSD, durationMs)
+  
+  // Track token usage
+  addToTotalTokens(inputTokens, outputTokens, 0);
 
   const assistantMessage: AssistantMessage = {
     durationMs,

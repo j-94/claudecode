@@ -114,6 +114,11 @@ export type GlobalConfig = {
   oauthAccount?: AccountInfo
   iterm2KeyBindingInstalled?: boolean // Legacy - keeping for backward compatibility
   shiftEnterKeyBindingInstalled?: boolean
+  // Research model access configuration
+  researchModelAccess?: boolean
+  allowedModels?: string[] // List of allowed models, especially research models
+  // Preferred model configuration
+  preferredModel?: string // The user's preferred Claude model
 }
 
 export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
@@ -139,6 +144,9 @@ export const GLOBAL_CONFIG_KEYS = [
   'primaryApiKey',
   'preferredNotifChannel',
   'shiftEnterKeyBindingInstalled',
+  'researchModelAccess',
+  'allowedModels',
+  'preferredModel',
 ] as const
 
 export type GlobalConfigKey = (typeof GLOBAL_CONFIG_KEYS)[number]

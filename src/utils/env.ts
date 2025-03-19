@@ -2,6 +2,9 @@ import { execFileNoThrow } from './execFileNoThrow.js'
 import { memoize } from 'lodash-es'
 import { join } from 'path'
 import { homedir } from 'os'
+import { existsSync } from 'fs'
+import { config } from 'dotenv'
+import { getCwd } from './state.js'
 
 // Base directory for all Claude Code data files (except config.json for backwards compatibility)
 export const CLAUDE_BASE_DIR =
@@ -12,6 +15,51 @@ export const GLOBAL_CLAUDE_FILE = process.env.CLAUDE_CONFIG_DIR
   ? join(CLAUDE_BASE_DIR, 'config.json')
   : join(homedir(), '.claude.json')
 export const MEMORY_DIR = join(CLAUDE_BASE_DIR, 'memory')
+
+// Load .env file if it exists in the current directory
+export function loadEnv() {
+  // Try to load .env from current directory
+  const envPath = join(getCwd(), '.env')
+  if (existsSync(envPath)) {
+    config({ path: envPath })
+    return true
+  }
+  
+  // If no .env file in current directory, try to load from .claude directory
+  const claudeEnvPath = join(CLAUDE_BASE_DIR, '.env')
+  if (existsSync(claudeEnvPath)) {
+    config({ path: claudeEnvPath })
+    return true
+  }
+  
+  return false
+}
+
+// Function to display current environment settings for research tools
+export function getResearchToolsEnvInfo(): Record<string, any> {
+  return {
+    lotus: {
+      apiKeyAvailable: !!process.env.LOTUS_API_KEY || !!process.env.OPENAI_API_KEY,
+      apiKeySource: process.env.LOTUS_API_KEY ? 'LOTUS_API_KEY' : 
+                    process.env.OPENAI_API_KEY ? 'OPENAI_API_KEY' : 'Not Available'
+    },
+    docETL: {
+      apiKeyAvailable: !!process.env.DOCETL_API_KEY || !!process.env.OPENAI_API_KEY || !!process.env.ANTHROPIC_API_KEY,
+      apiKeySource: process.env.DOCETL_API_KEY ? 'DOCETL_API_KEY' : 
+                   process.env.OPENAI_API_KEY ? 'OPENAI_API_KEY' : 
+                   process.env.ANTHROPIC_API_KEY ? 'ANTHROPIC_API_KEY' : 'Not Available',
+      model: process.env.DOCETL_MODEL || 'gpt-4 (default)'
+    },
+    claudeModel: {
+      model: process.env.ANTHROPIC_MODEL || 'default',
+      isResearchModel: process.env.ANTHROPIC_MODEL?.startsWith('research-') || false
+    },
+    debug: process.env.DEBUG === 'true'
+  }
+}
+
+// Initialize environment variables
+loadEnv()
 
 const getIsDocker = memoize(async (): Promise<boolean> => {
   // Check for .dockerenv file

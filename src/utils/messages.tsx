@@ -327,6 +327,40 @@ async function getMessagesForSlashCommand(
   try {
     const command = getCommand(commandName, context.options.commands)
     switch (command.type) {
+      case 'wizard': {
+        return new Promise(resolve => {
+          command
+            .getComponentForCommand()
+            .then(jsx => {
+              if (jsx) {
+                setToolJSX({
+                  jsx,
+                  shouldHidePromptInput: true,
+                })
+              } else {
+                setToolJSX(null)
+                resolve([
+                  createUserMessage(`<command-name>${command.userFacingName()}</command-name>
+                  <command-message>${command.userFacingName()}</command-message>
+                  <command-args>${args}</command-args>`),
+                  createAssistantMessage(NO_RESPONSE_REQUESTED),
+                ])
+              }
+            })
+            .catch(error => {
+              logError(error)
+              setToolJSX(null)
+              resolve([
+                createUserMessage(`<command-name>${command.userFacingName()}</command-name>
+                <command-message>${command.userFacingName()}</command-message>
+                <command-args>${args}</command-args>`),
+                createAssistantMessage(
+                  `<local-command-stderr>Error: ${error.message || String(error)}</local-command-stderr>`,
+                ),
+              ])
+            })
+        })
+      }
       case 'local-jsx': {
         return new Promise(resolve => {
           command

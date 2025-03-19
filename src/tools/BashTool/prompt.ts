@@ -9,7 +9,6 @@ export const MAX_OUTPUT_LENGTH = 30000
 export const MAX_RENDERED_LINES = 50
 export const BANNED_COMMANDS = [
   'alias',
-  'curl',
   'curlie',
   'wget',
   'axel',

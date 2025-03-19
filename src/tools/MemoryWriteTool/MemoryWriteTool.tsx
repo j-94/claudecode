@@ -9,8 +9,12 @@ import { MEMORY_DIR } from '../../utils/env.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'
 
 const inputSchema = z.strictObject({
-  file_path: z.string().describe('Path to the memory file to write'),
-  content: z.string().describe('Content to write to the file'),
+  file_path: z.string().optional().describe('Path to the memory file to write'),
+  content: z.string().optional().describe('Content to write to the file'),
+  key: z.string().optional().describe('Key to use as the filename for the memory item'),
+  value: z.string().optional().describe('Value to store in the memory file')
+}).refine(data => (!!data.file_path && !!data.content) || (!!data.key && !!data.value), {
+  message: "Either file_path+content OR key+value must be provided"
 })
 
 export const MemoryWriteTool = {
@@ -26,9 +30,8 @@ export const MemoryWriteTool = {
     return 'Write Memory'
   },
   async isEnabled() {
-    // TODO: Use a statsig gate
-    // TODO: Figure out how to do that without regressing app startup perf
-    return false
+    // Enable memory tools for all users in development and ant users in production
+    return process.env.NODE_ENV === 'development' || process.env.USER_TYPE === 'ant'
   },
   isReadOnly() {
     return false
@@ -37,6 +40,7 @@ export const MemoryWriteTool = {
     return false
   },
   renderResultForAssistant(content) {
+    console.log("Memory write successful");
     return content
   },
   renderToolUseMessage(input) {
@@ -56,17 +60,36 @@ export const MemoryWriteTool = {
       </Box>
     )
   },
-  async validateInput({ file_path }) {
-    const fullPath = join(MEMORY_DIR, file_path)
-    if (!fullPath.startsWith(MEMORY_DIR)) {
-      return { result: false, message: 'Invalid memory file path' }
+  async validateInput({ file_path, key }) {
+    // If file_path is provided, check that it's valid
+    if (file_path) {
+      const fullPath = join(MEMORY_DIR, file_path)
+      if (!fullPath.startsWith(MEMORY_DIR)) {
+        return { result: false, message: 'Invalid memory file path' }
+      }
+    }
+    // If neither file_path nor key is provided, reject
+    if (!file_path && !key) {
+      return { result: false, message: 'Either file_path or key must be provided' }
     }
     return { result: true }
   },
-  async *call({ file_path, content }) {
-    const fullPath = join(MEMORY_DIR, file_path)
+  async *call({ file_path, content, key, value }) {
+    // Support both parameter styles: either file_path+content or key+value
+    const usedFilePath = file_path || key
+    const usedContent = content || value
+    
+    if (!usedFilePath) {
+      throw new Error('Either file_path or key must be provided')
+    }
+    
+    if (usedContent === undefined) {
+      throw new Error('Either content or value must be provided')
+    }
+    
+    const fullPath = join(MEMORY_DIR, usedFilePath)
     mkdirSync(dirname(fullPath), { recursive: true })
-    writeFileSync(fullPath, content, 'utf-8')
+    writeFileSync(fullPath, usedContent, 'utf-8')
     yield {
       type: 'result',
       data: 'Saved',

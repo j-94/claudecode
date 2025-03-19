@@ -13,6 +13,10 @@ const inputSchema = z.strictObject({
     .string()
     .optional()
     .describe('Optional path to a specific memory file to read'),
+  key: z
+    .string()
+    .optional()
+    .describe('Key name of the memory item to read')
 })
 
 export const MemoryReadTool = {
@@ -28,9 +32,8 @@ export const MemoryReadTool = {
     return 'Read Memory'
   },
   async isEnabled() {
-    // TODO: Use a statsig gate
-    // TODO: Figure out how to do that without regressing app startup perf
-    return false
+    // Enable memory tools for all users in development and ant users in production
+    return process.env.NODE_ENV === 'development' || process.env.USER_TYPE === 'ant'
   },
   isReadOnly() {
     return true
@@ -59,7 +62,8 @@ export const MemoryReadTool = {
       </Box>
     )
   },
-  async validateInput({ file_path }) {
+  async validateInput({ file_path, key }) {
+    // If file_path is provided directly, validate it
     if (file_path) {
       const fullPath = join(MEMORY_DIR, file_path)
       if (!fullPath.startsWith(MEMORY_DIR)) {
@@ -69,22 +73,43 @@ export const MemoryReadTool = {
         return { result: false, message: 'Memory file does not exist' }
       }
     }
+    
+    // If key is provided, validate it as a file path
+    if (key) {
+      const fullPath = join(MEMORY_DIR, key)
+      if (!fullPath.startsWith(MEMORY_DIR)) {
+        return { result: false, message: 'Invalid memory key' }
+      }
+      if (!existsSync(fullPath)) {
+        return { result: false, message: `Memory key "${key}" does not exist` }
+      }
+    }
+    
+    // At least one of file_path or key must be provided when reading a specific file
+    if (!file_path && !key && !process.env.LIST_ALL_MEMORY) {
+      return { result: true } // This will list all memory files
+    }
+    
     return { result: true }
   },
-  async *call({ file_path }) {
+  async *call({ file_path, key }) {
     mkdirSync(MEMORY_DIR, { recursive: true })
 
-    // If a specific file is requested, return its contents
-    if (file_path) {
-      const fullPath = join(MEMORY_DIR, file_path)
+    // Support both parameter styles - either file_path or key
+    const usedFilePath = file_path || key
+    
+    // If a specific file is requested (via either parameter), return its contents
+    if (usedFilePath) {
+      const fullPath = join(MEMORY_DIR, usedFilePath)
       if (!existsSync(fullPath)) {
-        throw new Error('Memory file does not exist')
+        throw new Error(`Memory file does not exist: ${usedFilePath}`)
       }
       const content = readFileSync(fullPath, 'utf-8')
       yield {
         type: 'result',
         data: {
           content,
+          value: content, // Add this for backward compatibility
         },
         resultForAssistant: this.renderResultForAssistant({ content }),
       }

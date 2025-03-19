@@ -27,6 +27,10 @@ import { listAllContentFiles } from './ripgrep.js'
 import { LRUCache } from 'lru-cache'
 import { getCwd } from './state.js'
 
+export async function fileExists(path: string): Promise<boolean> {
+  return existsSync(path)
+}
+
 export type File = {
   filename: string
   content: string
