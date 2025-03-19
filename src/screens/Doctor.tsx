@@ -13,6 +13,7 @@ import { saveGlobalConfig, getGlobalConfig } from '../utils/config.js'
 import { logEvent } from '../services/statsig.js'
 import { PRODUCT_NAME } from '../constants/product.js'
 import { PressEnterToContinue } from '../components/PressEnterToContinue.js'
+import { getResearchToolsEnvInfo } from '../utils/env.js'
 
 type Props = {
   onDone: () => void
@@ -113,10 +114,45 @@ export function Doctor({ onDone, doctorMode = false }: Props): React.ReactNode {
 
   if (hasPermissions === true) {
     if (doctorMode) {
+      const researchToolsInfo = getResearchToolsEnvInfo()
+      
       return (
         <Box flexDirection="column" gap={1} paddingX={1} paddingTop={1}>
           <Text color={theme.success}>✓ npm permissions: OK</Text>
           <Text>Your installation is healthy and ready for auto-updates.</Text>
+          
+          <Text bold>Research Tools Environment:</Text>
+          
+          <Box flexDirection="column" marginLeft={2}>
+            <Box>
+              <Text>Lotus API Key: </Text>
+              <Text color={researchToolsInfo.lotus.apiKeyAvailable ? theme.success : theme.suggestion}>
+                {researchToolsInfo.lotus.apiKeyAvailable ? 'Available' : 'Not configured'} 
+                <Text color={theme.secondaryText}> ({researchToolsInfo.lotus.apiKeySource})</Text>
+              </Text>
+            </Box>
+            
+            <Box>
+              <Text>DocETL API Key: </Text>
+              <Text color={researchToolsInfo.docETL.apiKeyAvailable ? theme.success : theme.suggestion}>
+                {researchToolsInfo.docETL.apiKeyAvailable ? 'Available' : 'Not configured'} 
+                <Text color={theme.secondaryText}> ({researchToolsInfo.docETL.apiKeySource})</Text>
+              </Text>
+            </Box>
+            
+            <Box>
+              <Text>DocETL Model: </Text>
+              <Text color={theme.success}>{researchToolsInfo.docETL.model}</Text>
+            </Box>
+            
+            <Box>
+              <Text>Debug Mode: </Text>
+              <Text color={researchToolsInfo.debug ? theme.warning : theme.secondaryText}>
+                {researchToolsInfo.debug ? 'Enabled' : 'Disabled'}
+              </Text>
+            </Box>
+          </Box>
+          
           <PressEnterToContinue />
         </Box>
       )
