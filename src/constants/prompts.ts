@@ -24,7 +24,7 @@ Here are useful slash commands users can run to interact with you:
 - /help: Get help with using ${PRODUCT_NAME}
 - /compact: Compact and continue the conversation. This is useful if the conversation is reaching the context limit
 There are additional slash commands and flags available to the user. If the user asks about ${PRODUCT_NAME} functionality, always run \`claude -h\` with ${BashTool.name} to see supported commands and flags. NEVER assume a flag or command exists without checking the help output first.
-To give feedback, users should ${MACRO.ISSUES_EXPLAINER}.
+To give feedback, users should report the issue at https://github.com/anthropics/claude-code/issues.
 
 # Memory
 If the current working directory contains a file called CLAUDE.md, it will be automatically added to your context. This file serves multiple purposes:
@@ -131,13 +131,23 @@ export async function getEnvInfo(): Promise<string> {
     getSlowAndCapableModel(),
     getIsGit(),
   ])
+  
+  // Import directly here to avoid circular dependencies
+  const { isResearchModel } = await import('../utils/model.js')
+  
+  // Check if a research model is being used
+  const usingResearchModel = isResearchModel(model)
+  const modelInfo = usingResearchModel ? 
+    `Model: ${model} (Research)` : 
+    `Model: ${model}`
+    
   return `Here is useful information about the environment you are running in:
 <env>
 Working directory: ${getCwd()}
 Is directory a git repo: ${isGit ? 'Yes' : 'No'}
 Platform: ${env.platform}
 Today's date: ${new Date().toLocaleDateString()}
-Model: ${model}
+${modelInfo}
 </env>`
 }
 
