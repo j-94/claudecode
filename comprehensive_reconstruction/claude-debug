@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Claude Code Debug CLI Launcher
+# This script provides detailed output for debugging issues with Claude Code
+
+# Change to the script's directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+# Set debug environment variables
+export DEBUG=claude*
+export NODE_OPTIONS="--trace-warnings --unhandled-rejections=strict"
+export NODE_ENV=development
+export CLAUDE_VERBOSE=true
+
+echo "=== Claude Code Debug Mode ==="
+echo "Working directory: $(pwd)"
+echo "Node version: $(node -v)"
+echo "NPX version: $(npx -v)"
+echo "===============================\n"
+
+# Run the CLI with debug flags
+echo "Starting Claude CLI..."
+
+# Check for tsx
+if ! command -v npx &> /dev/null; then
+    echo "Error: npx is not installed"
+    exit 1
+fi
+
+# Check if first argument is a command
+if [ "$1" = "--simple" ]; then
+    shift
+    echo "Running in simple mode (debug-cli.js)..."
+    npx tsx debug-cli.js "$@"
+    exit $?
+fi
+
+# Run with all debug flags
+echo "Running with full debug output..."
+npx tsx --inspect ./src/entrypoints/cli.tsx "$@"
