@@ -1,0 +1,10 @@
+{
+  "test-server": {
+    "type": "stdio",
+    "command": "node",
+    "args": [
+      "test-mcp-server.cjs"
+    ],
+    "env": {}
+  }
+}
