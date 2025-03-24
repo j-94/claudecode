@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "format": "prettier --write src",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "start-proxy": "node scripts/start-openrouter-proxy.js",
+    "with-openrouter": "USE_OPENROUTER=true ANTHROPIC_BASE_URL=http://localhost:3000 node run-claude.js"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.12.4",

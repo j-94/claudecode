@@ -14,6 +14,11 @@ import { Tool } from '../Tool.js'
 import { getAnthropicApiKey, getOrCreateUserID } from '../utils/config.js'
 import { logError, SESSION_ID } from '../utils/log.js'
 import { USER_AGENT } from '../utils/http.js'
+import { 
+  isOpenRouterEnabled, 
+  getProxyEndpoint, 
+  validateOpenRouterConfig 
+} from '../utils/openrouter.js'
 import {
   createAssistantAPIErrorMessage,
   normalizeContentFromAPI,
@@ -41,6 +46,8 @@ export const PROMPT_TOO_LONG_ERROR_MESSAGE = 'Prompt is too long'
 export const CREDIT_BALANCE_TOO_LOW_ERROR_MESSAGE = 'Credit balance is too low'
 export const INVALID_API_KEY_ERROR_MESSAGE =
   'Invalid API key · Please run /login'
+export const OPENROUTER_ERROR_MESSAGE =
+  'OpenRouter error · Check your API key and proxy configuration'
 export const NO_CONTENT_MESSAGE = '(no content)'
 const PROMPT_CACHING_ENABLED = !process.env.DISABLE_PROMPT_CACHING
 
@@ -272,11 +279,35 @@ export function getAnthropicClient(model?: string): Anthropic {
       ),
     )
   }
-  anthropicClient = new Anthropic({
-    apiKey,
-    dangerouslyAllowBrowser: true,
-    ...ARGS,
-  })
+  
+  // Check if OpenRouter proxy is enabled
+  if (isOpenRouterEnabled()) {
+    // Validate configuration
+    const { valid, message } = validateOpenRouterConfig()
+    if (!valid) {
+      logError(new Error(message))
+      console.error(chalk.red(`OpenRouter configuration error: ${message}`))
+    }
+    
+    // Get proxy URL
+    const proxyUrl = getProxyEndpoint()
+    console.log(chalk.blue(`Using OpenRouter via anthropic-proxy at ${proxyUrl}`))
+    
+    // Create client with proxy base URL
+    anthropicClient = new Anthropic({
+      apiKey: apiKey || 'dummy-key', // The proxy doesn't use this key
+      baseURL: proxyUrl,
+      dangerouslyAllowBrowser: true,
+      ...ARGS,
+    })
+  } else {
+    // Standard Anthropic client
+    anthropicClient = new Anthropic({
+      apiKey,
+      dangerouslyAllowBrowser: true,
+      ...ARGS,
+    })
+  }
   return anthropicClient
 }
 
@@ -630,6 +661,16 @@ function getAssistantMessageFromError(error: unknown): AssistantMessage {
     error.message.toLowerCase().includes('x-api-key')
   ) {
     return createAssistantAPIErrorMessage(INVALID_API_KEY_ERROR_MESSAGE)
+  }
+  // Check for OpenRouter-specific errors (proxy connection failures, etc.)
+  if (
+    isOpenRouterEnabled() && 
+    error instanceof Error && 
+    (error.message.includes('ECONNREFUSED') || 
+     error.message.includes('connect ECONNREFUSED') ||
+     error.message.toLowerCase().includes('openrouter'))
+  ) {
+    return createAssistantAPIErrorMessage(OPENROUTER_ERROR_MESSAGE)
   }
   if (error instanceof Error) {
     return createAssistantAPIErrorMessage(

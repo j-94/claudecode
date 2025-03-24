@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# claude-openrouter: A wrapper script to use Claude Code with OpenRouter proxy
+# This script starts both the proxy and Claude with the appropriate environment variables
+
+# Directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "$SCRIPT_DIR"
+
+# Check if OpenRouter API key is set
+if [ -z "$OPENROUTER_API_KEY" ]; then
+  # Check if .env file exists and has API key
+  if [ -f ".env" ] && grep -q "OPENROUTER_API_KEY" .env; then
+    source .env
+  else
+    echo "OpenRouter API key not found!"
+    echo "Please set OPENROUTER_API_KEY environment variable or add it to .env file."
+    exit 1
+  fi
+fi
+
+# Check if anthropic-proxy is installed
+if ! command -v anthropic-proxy &> /dev/null; then
+  echo "Installing anthropic-proxy..."
+  npm install -g anthropic-proxy
+fi
+
+# Function to handle cleanup on exit
+cleanup() {
+  echo "Stopping proxy server..."
+  kill $PROXY_PID
+  exit 0
+}
+
+# Set proxy server in background
+echo "Starting OpenRouter proxy server..."
+OPENROUTER_API_KEY=$OPENROUTER_API_KEY anthropic-proxy &
+PROXY_PID=$!
+
+# Setup trap to clean up on script exit
+trap cleanup SIGINT SIGTERM EXIT
+
+# Wait for proxy to start
+sleep 2
+
+# Start Claude with OpenRouter config
+echo "Starting Claude Code with OpenRouter..."
+USE_OPENROUTER=true ANTHROPIC_BASE_URL=http://localhost:3000 ./claude "$@"

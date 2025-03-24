@@ -45,6 +45,54 @@ The reconstructed Claude CLI supports both interactive and non-interactive modes
 - **Help**: Use `./claude --help` to see all available commands
 - **Version**: Use `./claude --version` to see the current version
 
+## Using OpenRouter for Cost-Effective API Access
+
+This reconstructed version supports using OpenRouter as a cost-effective alternative to the direct Anthropic API. This can significantly reduce costs while maintaining similar capabilities.
+
+### Setup OpenRouter Integration
+
+1. Sign up for an [OpenRouter account](https://openrouter.ai/) and obtain an API key
+2. Install the anthropic-proxy:
+   ```
+   npm install -g anthropic-proxy
+   ```
+3. Start the proxy with your OpenRouter API key:
+   ```
+   OPENROUTER_API_KEY=your-api-key npx anthropic-proxy
+   ```
+   
+   Alternatively, use our helper script:
+   ```
+   npm run start-proxy
+   ```
+   
+4. In a separate terminal, run Claude Code with these environment variables:
+   ```
+   USE_OPENROUTER=true ANTHROPIC_BASE_URL=http://localhost:3000 ./claude
+   ```
+   
+### All-in-One OpenRouter Script
+
+For convenience, we provide an all-in-one script that manages both the proxy and Claude:
+
+```
+# Make the script executable (first time only)
+chmod +x ./claude-openrouter
+
+# Run Claude Code with OpenRouter
+./claude-openrouter
+```
+
+This script will automatically start the proxy server, then launch Claude Code configured to use it. When you exit Claude, the proxy will be shut down automatically.
+
+You can also use the npm convenience command:
+
+```
+npm run with-openrouter
+```
+   
+This setup will route your Claude Code requests through OpenRouter, reducing costs while maintaining compatibility with the Claude models.
+
 ## Troubleshooting
 
 If you encounter issues with TTY handling or interactive mode:
