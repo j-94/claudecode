@@ -1,0 +1,8 @@
+# Design Spec: DS-001
+## Heading A: Concept Alpha
+- update_method: manual
+- challenges: ambiguity
+
+## Heading B: Concept Beta
+- update_method: scripted
+- challenges: integration
