@@ -1,0 +1,29 @@
+lanes:
+  - id: impl
+  - id: tests
+  - id: docs
+tasks:
+  - id: adapters
+    lane: impl
+    lockset: ["adapters/*"]
+    outputs: ["adapters/llm_adapter.py","adapters/claude_code_adapter.py","adapters/openai_gpt5_adapter.py"]
+  - id: core
+    lane: impl
+    lockset: ["core/*"]
+    outputs: ["core/state.py","core/policy.py","core/turn_loop.py","core/telemetry.py","core/security.py","core/scoring.py","core/budget.py","core/types.py"]
+  - id: tools
+    lane: impl
+    lockset: ["tools/*"]
+    outputs: ["tools/spec.py","tools/validators.py","tools/simulate.py"]
+  - id: tests
+    lane: tests
+    lockset: ["tests/*"]
+    outputs: ["tests/golden_traces.jsonl","tests/property_tests.md","tests/fixtures/DS-001.txt"]
+  - id: runner
+    lane: impl
+    lockset: ["runner/*"]
+    outputs: ["runner/validate_golden_traces.py","runner/simulate_controller_tick.py"]
+  - id: docs
+    lane: docs
+    lockset: [".github/*","README.md"]
+    outputs: [".github/PULL_REQUEST_TEMPLATE.md","README.md"]

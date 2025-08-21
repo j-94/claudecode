@@ -1,0 +1,19 @@
+- id: T1
+  lane: impl
+  plan: "Implement LLMAdapter + ClaudeCodeAdapter + OpenAIGPT5Adapter stubs with docstrings and example transcript."
+  lockset: ["adapters/*"]
+
+- id: T2
+  lane: tests
+  plan: "Write tests/golden_traces.jsonl (10 cases) + tests/property_tests.md + fixtures/DS-001.txt."
+  lockset: ["tests/*"]
+
+- id: T3
+  lane: docs
+  plan: "Prepare .github/PULL_REQUEST_TEMPLATE.md and README.md describing TURN_LOOP, TELEMETRY, properties."
+  lockset: [".github/*","README.md"]
+
+- id: T4
+  lane: impl
+  plan: "Implement runner/validate_golden_traces.py and runner/simulate_controller_tick.py."
+  lockset: ["runner/*"]

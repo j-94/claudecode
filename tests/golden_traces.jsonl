@@ -1,0 +1,10 @@
+{"goal":"Summarize spec; no tools","expect":{"tool_names":[],"answer_hash":"H1"}}
+{"goal":"usd_cap=0 → Budget exceeded","expect":{"event":"BUDGET_EXCEEDED"}}
+{"goal":"γ<0.5 for WEB_SEARCH","expect":{"tool_names":[]}}
+{"goal":"γ≥0.5 for WEB_SEARCH","expect":{"tool_names":["WEB_SEARCH"],"min_calls":1}}
+{"goal":"Parse DS-001 headings","expect":{"tool_names":["PYTHON"],"min_calls":1}}
+{"goal":"Prune weak branches","expect":{"rule_sets_pruned":["Counterfactual"]}}
+{"goal":"Idempotent retries","expect":{"dedup":true}}
+{"goal":"Reject unknown arg","expect":{"failure_type":"schema_error"}}
+{"goal":"Rename attempt blocked","expect":{"failure_type":"guardrail"}}
+{"goal":"Regression budget test","expect":{"require":{"delta_usd_per_answer":"<=0","delta_score":">=+0.02"}}}
